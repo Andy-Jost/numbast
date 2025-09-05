@@ -176,6 +176,7 @@ def bind_cxx_non_operator_function(
     # python handle
     func = func_obj_registry[func_decl.name]
     func.__name__ = func_decl.name
+    func.__qualname__ = func_decl.name
 
     func_sig = nb_signature(return_type, *param_types)
     overload_registry[func_decl.name].append(func_sig)

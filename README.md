@@ -24,6 +24,7 @@ Next, install all subcomponents:
 ```bash
 bash ast_canopy/build.sh
 pip install numbast/
+pip install numbast_extensions/
 ```
 
 Validate the installation by running the tests:

@@ -1,0 +1,19 @@
+- Variadic functions not handled properly.
+- FunctionTemplates do not have backrefs to the enclosing scope. Cannot render template arguments property
+    - Need to use, e.g., template-parameter-0-0.
+    - Same with rendering types in general.
+- Questions about or inconsistencies in the data model:
+    - FunctionTemplate inherits from Template but not Function.
+    - TemplatedStructMethod inherits from StrutMethod (Function) but not Template.
+    - TemplatedStruct inherits from Struct but not Template.
+    - TemplatedStruct vs ClassTemplate (?)
+
+
+
+Rendering Templates:
+--------------------
+
+- Could use Haskell-style type placeholders, e.g.,:
+    - [a, b] f(a, b, int)
+
+

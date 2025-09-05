@@ -12,6 +12,16 @@ namespace py = pybind11;
 
 using namespace ast_canopy;
 
+static std::string join(std::string const &first, std::string const &second)
+{
+  if (second.empty())
+    return first;
+  else if (first.empty())
+    return second;
+  else
+    return first + " " + second;
+}
+
 PYBIND11_MODULE(pylibastcanopy, m) {
   m.doc() = "Python bindings for canopy.hpp";
 
@@ -68,6 +78,7 @@ PYBIND11_MODULE(pylibastcanopy, m) {
                      &Type::unqualified_non_ref_type_name)
       .def("is_right_reference", &Type::is_right_reference)
       .def("is_left_reference", &Type::is_left_reference)
+      .def("__str__", [](const Type &t) { return t.name; })
       .def("__repr__", [](const Type &t) { return "<Type: " + t.name + ">"; })
       .def(py::pickle(
           [](const Type &f) {
@@ -92,9 +103,10 @@ PYBIND11_MODULE(pylibastcanopy, m) {
       .def_readwrite("name", &Field::name)
       .def_readwrite("type_", &Field::type)
       .def_readwrite("access", &Field::access)
+      .def("__str__", [](const Field &f) { return join(f.type.name, f.name); })
       .def("__repr__",
            [](const Field &f) {
-             return "<Field: " + f.name + " " + f.type.name + ">";
+             return "<Field: " + join(f.type.name, f.name) + ">";
            })
       .def(py::pickle(
           [](const Field &f) {
@@ -111,9 +123,10 @@ PYBIND11_MODULE(pylibastcanopy, m) {
       .def(py::init<std::string, Type>())
       .def_readwrite("name", &ParamVar::name)
       .def_readwrite("type_", &ParamVar::type)
+      .def("__str__", [](const ParamVar &p) { return join(p.type.name, p.name); })
       .def("__repr__",
            [](const ParamVar &p) {
-             return "<ParamVar: " + p.name + " " + p.type.name + ">";
+             return "<ParamVar: " + join(p.type.name, p.name) + ">";
            })
       .def(py::pickle(
           [](const ParamVar &p) { return py::make_tuple(p.name, p.type); },
@@ -128,9 +141,10 @@ PYBIND11_MODULE(pylibastcanopy, m) {
       .def_readwrite("name", &TemplateParam::name)
       .def_readwrite("type_", &TemplateParam::type)
       .def_readwrite("kind", &TemplateParam::kind)
+      .def("__str__", [](const TemplateParam &t) { return t.name; })
       .def("__repr__",
            [](const TemplateParam &t) {
-             return "<TemplateParam: " + t.name + " " + t.type.name + ">";
+             return "<TemplateParam: " + join(t.type.name, t.name) + ">";
            })
       .def(py::pickle(
           [](const TemplateParam &t) {

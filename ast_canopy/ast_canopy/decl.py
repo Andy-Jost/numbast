@@ -87,12 +87,8 @@ class Function:
 
         self.parse_entry_point = parse_entry_point
 
-    def __str__(self):
-        return f"{self.name}({', '.join(str(p) for p in self.params)}) -> {self.return_type}"
-
     def __repr__(self):
-        old = super().__repr__()
-        return f"{old[:-1]} {self.__str__()}>"
+        return f"<{self.__class__.__name__}: {self.name}({', '.join(p.type_.name for p in self.params)}) -> {self.return_type!s}>"
 
     @property
     def param_types(self) -> list[bindings.Type]:
@@ -184,6 +180,18 @@ class FunctionTemplate(Template):
         self.function = function
 
         self.parse_entry_point = parse_entry_point
+
+    def __repr__(self):
+        show_tparam = lambda tp: tp.name if tp.kind == bindings.template_param_kind.type_ else tp.type_.name
+        tparams = ', '.join(show_tparam(tp) for tp in self.template_parameters)
+        show_type = lambda ty: _show_type(ty, self.template_parameters)
+        fparams = ', '.join(show_type(p.type_) for p in self.function.params)
+        ret = show_type(self.function.return_type)
+        return f"<{self.__class__.__name__}: {self.function.name}[{tparams}]({fparams}) -> {ret}>"
+
+    @property
+    def name(self):
+        return self.function.name
 
     @classmethod
     def from_c_obj(
@@ -297,6 +305,9 @@ class Struct:
 
         self.parse_entry_point = parse_entry_point
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: {self.name!r}>"
+
     def constructors(self):
         for m in self.methods:
             if m.name == self.name:
@@ -370,6 +381,21 @@ class ClassTemplate(Template):
 
         self.parse_entry_point = parse_entry_point
 
+    ### BEGIN FIXME - seems like inheritance would be preferable here.
+    @property
+    def name(self):
+        return self.record.name
+
+    @property
+    def methods(self):
+        return self.record.methods
+
+    @property
+    def templated_methods(self):
+        return self.record.templated_methods
+
+    ### END FIXME
+
     @classmethod
     def from_c_obj(cls, c_obj: bindings.ClassTemplate, parse_entry_point: str):
         return cls(
@@ -398,3 +424,12 @@ class ConstExprVar:
     def value(self):
         cxx_type_name = self.type_.unqualified_non_ref_type_name
         return CXX_TYPE_TO_PYTHON_TYPE[cxx_type_name](self.value_serialized)
+
+def _show_type(type_, template_parameters=None):
+  if template_parameters is not None and type_.name.startswith('type-parameter-0-'):
+      idx = int(type_.name[17:])
+      return template_parameters[idx].name
+  else:
+      return type_.name
+
+
